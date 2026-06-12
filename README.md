@@ -6,13 +6,15 @@ A personal collection of Claude Code plugins.
 
 | Plugin | Description | Version |
 | --- | --- | --- |
-| graphify-kit | Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, Explore override, session sync hooks, worktree seeding, and a graph-health doctor | 0.3.0 |
+| graphify-kit | Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, Explore override, session sync hooks, worktree seeding, and a graph-health doctor | 0.4.0 |
+| spec | Vault-backed spec workflow: `spec:plan` single front door (brainstorm + grill + spec, optional lean plan doc, execution-mode decision); `spec:execute` runs handed-off plans through pinned subagents | 0.2.0 |
 
 ## Installation
 
 ```
 /plugin marketplace add psalkowski/claude-marketplace
 /plugin install graphify-kit
+/plugin install spec
 ```
 
 ## Adding a Plugin

@@ -7,8 +7,14 @@
     {
       "name": "graphify-kit",
       "description": "Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, Explore override, session sync hooks, worktree seeding, and a graph-health doctor",
-      "version": "0.3.0",
+      "version": "0.4.0",
       "source": "./plugins/graphify-kit"
+    },
+    {
+      "name": "spec",
+      "description": "Vault-backed spec workflow: spec:plan is the single front door (brainstorm + grill + spec, with an optional lean plan doc and an execution-mode decision); spec:execute runs handed-off plans through pinned subagents. Self-contained; reads per-project settings from a JSON block in CLAUDE.local.md.",
+      "version": "0.2.0",
+      "source": "./plugins/spec"
     }
   ]
 }

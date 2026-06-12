@@ -1,0 +1,8 @@
+{
+  "name": "spec",
+  "description": "Vault-backed spec workflow: spec:plan is the single front door (brainstorm + grill + spec, with an optional lean plan doc and an execution-mode decision); spec:execute runs handed-off plans through pinned subagents. Self-contained (no superpowers dependency); reads per-project settings from a JSON block in CLAUDE.local.md.",
+  "version": "0.2.0",
+  "author": {
+    "name": "Piotr Salkowski"
+  }
+}
