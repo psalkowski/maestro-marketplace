@@ -9,6 +9,12 @@
       "description": "Fully autonomous task-to-PR workflow with 26 specialized agents across 11 phases",
       "version": "2.3.0",
       "source": "./plugins/autopilot"
+    },
+    {
+      "name": "graphify-kit",
+      "description": "Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, Explore override, session sync hooks, worktree seeding, and a graph-health doctor",
+      "version": "0.1.0",
+      "source": "./plugins/graphify-kit"
     }
   ]
 }
