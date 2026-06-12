@@ -1,5 +1,4 @@
 ---
-name: setup
 description: Use when onboarding a repository to graphify (knowledge graph) or re-running onboarding after .graphifyignore changes — installs the CLI, analyzes the repo to propose exclusions, builds the AST graph, installs the agent navigation protocol (CLAUDE.md section + Explore override), and wires worktree seeding. Triggers on /graphify-kit:setup.
 ---
 

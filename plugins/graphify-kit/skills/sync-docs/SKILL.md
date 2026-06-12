@@ -1,5 +1,4 @@
 ---
-name: sync-docs
 description: Use when the repo's docs, knowledge base, or an external notes vault should be (re-)indexed into the graphify knowledge graph semantically — after authoring or editing docs, or when doc knowledge is missing from the graph. Runs LLM extraction with strict model and token discipline. Triggers on /graphify-kit:sync-docs.
 ---
 

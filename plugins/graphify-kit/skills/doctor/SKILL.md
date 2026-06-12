@@ -1,5 +1,4 @@
 ---
-name: doctor
 description: Use when the graphify knowledge graph misbehaves (explain misses known symbols, stale results, sync errors, suspicious node counts) or after upgrades and bulk operations — runs the full health-check suite against graphify-out and prescribes the repair for each failure. Triggers on /graphify-kit:doctor.
 ---
 
