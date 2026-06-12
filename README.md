@@ -6,7 +6,7 @@ A personal collection of Claude Code plugins.
 
 | Plugin | Description | Version |
 | --- | --- | --- |
-| graphify-kit | Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, Explore override, session sync hooks, worktree seeding, and a graph-health doctor | 0.2.0 |
+| graphify-kit | Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, Explore override, session sync hooks, worktree seeding, and a graph-health doctor | 0.3.0 |
 
 ## Installation
 

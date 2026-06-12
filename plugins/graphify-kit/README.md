@@ -10,7 +10,7 @@ A bare graph gets abandoned. Observed failure mode (repeatedly, in real transcri
 
 1. **Symbol directory** — a deterministic jq enumeration over node labels that turns a concept word into real symbol names _before_ any `explain` (upstream feature request: [safishamsi/graphify#1296](https://github.com/safishamsi/graphify/issues/1296)).
 2. **Anti-guessing + re-entry rules** — never explain an unobserved name; the moment grep shows a real name, the next relationship question goes to `explain`.
-3. **Delivery to every context** — CLAUDE.md section for the main loop, a project-level `Explore` agent override for subagents (they don't inherit CLAUDE.md, and hook nudges don't reach them), and PreToolUse nudges that fire at exactly the moment the agent reaches for grep.
+3. **Delivery to every context** — a `CLAUDE.local.md` (or `CLAUDE.md`) section for the main loop, a project-level `Explore` agent override for subagents (they don't inherit CLAUDE.md, and hook nudges don't reach them), and PreToolUse nudges that fire at exactly the moment the agent reaches for grep.
 4. **Exclusion analysis before the first build** — design mockups that duplicate production names, doc-site prose, and images poison the matcher and burn extraction tokens. The setup skill analyzes the repo and proposes a `.graphifyignore` before building. (Tests that import production code are deliberately KEPT — they power `affected`-based test selection.)
 5. **`graphify query` is retired** — measured across two graphify versions: it BFS-floods 2-hop neighborhoods from ~3 substring-matched seeds (102–739 noise nodes per call) and never returns the matching names. Richer "natural language" prompts make it worse.
 

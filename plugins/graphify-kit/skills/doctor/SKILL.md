@@ -63,7 +63,7 @@ Non-zero is only legitimate for doc/paper files awaiting `/graphify-kit:sync-doc
 
 ### 7 — Protocol installed
 
-- `CLAUDE.md` contains the `graphify-kit:begin` marker.
+- Exactly one of `CLAUDE.md` or `CLAUDE.local.md` contains the `graphify-kit:begin` marker (the block in both files is a misconfiguration — remove the stale copy, keeping `CLAUDE.local.md` unless `CLAUDE.md` independently documents graphify).
 - `.claude/agents/explore.md` exists with `model: haiku` frontmatter.
 - The symbol directory returns results for a domain term that certainly exists in this repo (pick one from the README).
 

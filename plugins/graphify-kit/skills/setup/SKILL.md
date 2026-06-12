@@ -40,9 +40,15 @@ This is deterministic and free — no API keys needed for a code-only corpus. Re
 
 ## Step 3 — Install the navigation protocol
 
-Append `${CLAUDE_PLUGIN_ROOT}/templates/claude-md-section.md` to the project's `CLAUDE.md` (create the file if missing). Idempotency: the template is wrapped in `<!-- graphify-kit:begin -->` / `<!-- graphify-kit:end -->` markers — if the markers already exist, replace the block instead of appending.
+Install `${CLAUDE_PLUGIN_ROOT}/templates/claude-md-section.md` as a managed block (wrapped in `<!-- graphify-kit:begin -->` / `<!-- graphify-kit:end -->` markers) into exactly ONE project-level memory file. Check both `CLAUDE.md` and `CLAUDE.local.md`, then pick the target in this order:
 
-Note: if the repo previously ran `graphify claude install`, its query-centric CLAUDE.md section and PreToolUse hook are superseded by this plugin — remove them (the upstream section steers agents to `graphify query`, which returns BFS neighborhoods, not matches; see the protocol for the measured evidence).
+1. **Markers already present** — if either file already contains a `graphify-kit:begin` block, replace that block in place and stop. Never write the block to both; if both somehow have it, keep the one in the file chosen by the rules below and delete the other.
+2. **`CLAUDE.md` already documents graphify** — if `CLAUDE.md` mentions graphify outside our markers (a `## Graphify` heading, `graphify-out`, `graphify explain`, or a leftover `graphify claude install` section), install/replace the block in `CLAUDE.md` so all graphify guidance lives in one shared, committed place.
+3. **Default → `CLAUDE.local.md`** — otherwise install into `CLAUDE.local.md` (create it if missing). This is the preferred target: the protocol describes a local, uncommitted graph, so its guidance belongs alongside `graphify-out/` and `.graphifyignore` rather than in committed memory. Ensure the file is git-ignored: `git check-ignore -q CLAUDE.local.md`; if it is NOT already ignored, append `CLAUDE.local.md` to `.git/info/exclude` (the per-repo, never-committed ignore file). Report which mechanism already covered it, or that you added the exclude.
+
+Idempotency: re-running replaces the block in whichever file currently holds it; it does not migrate the block between files on its own.
+
+Note: if the repo previously ran `graphify claude install`, its query-centric section and PreToolUse hook are superseded by this plugin — remove them (the upstream section steers agents to `graphify query`, which returns BFS neighborhoods, not matches; see the protocol for the measured evidence). That legacy section satisfies rule 2, so install the managed block into `CLAUDE.md` and delete the legacy lines.
 
 ## Step 4 — Install the Explore agent override
 
