@@ -1,4 +1,4 @@
-# docs-obsidian (v0.1.0)
+# docs-obsidian (v0.1.1)
 
 Obsidian **driver plugin** for the docs-hub provider contract. It integrates an Obsidian vault as the project's docs provider: bootstraps the vault-global folders, ensures the project's Backing Store folder (`<vault>/Projects/<project>/`) exists, and optionally registers the Obsidian MCP add-on.
 

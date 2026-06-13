@@ -1,6 +1,6 @@
 ---
 name: Explore
-description: Read-only search agent for broad fan-out codebase exploration — use when answering means sweeping many files, directories, or naming conventions and the caller only needs the conclusion, not file dumps. Locates code and maps relationships; does not review or audit. Specify search breadth — "medium" for moderate exploration, "very thorough" for multiple locations and naming conventions.
+description: Graph-aware read-only exploration agent. Harvests real symbol names from the graphify knowledge graph, maps relationships with `graphify explain`/`affected` (callers, callees, imports, file:line), and reads only for line-level evidence — far cheaper and more accurate than blind grep. PREFER this over the native Explore in any repo that has a graphify-out/ graph; it falls back to plain Grep/Glob/Read when no graph is present. Use for broad codebase sweeps where the caller needs conclusions, not file dumps.
 tools: Bash, Glob, Grep, Read
 model: haiku
 ---

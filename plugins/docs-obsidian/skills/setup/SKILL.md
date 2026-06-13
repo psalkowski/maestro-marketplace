@@ -85,6 +85,16 @@ claude mcp add obsidian --env OBSIDIAN_API_KEY=<key> --env OBSIDIAN_HOST=127.0.0
 
 4. Verify the entry appears in `claude mcp list` and report that the MCP becomes available in fresh sessions.
 
+## Working with the vault through the MCP
+
+When the Obsidian MCP is registered, two access rules keep it reliable — surface them to the user, and apply them whenever an agent touches the vault via `mcp__obsidian__*`:
+
+- **Never read a vault document whole.** Large notes exceed the MCP result-size limit and the read fails outright. First call `vault_get_document_map` to list the note's sections + frontmatter fields, then `vault_read` with `targetType: heading` for the specific section you need. (Plain file tools on `.docs/vault/` have no such limit — this rule is specifically for the MCP path.)
+- **`vault_patch` does not round-trip JSON** — match the value shape when editing one frontmatter key:
+  - Scalar string / wikilink → `operation: replace`, `contentType: text/markdown`, content = the **bare value, no surrounding quotes** (the server quotes it once). Passing a quoted string as `application/json` double-encodes it.
+  - `null` / number / boolean → `contentType: application/json`, content = `null` / `42` / `true`.
+  - A **multi-item array** (e.g. `related`, `contexts`) cannot be built by `vault_patch` — every mode stringifies it. Use `vault_write` on the whole file to author or repair a real YAML sequence.
+
 ## Explicit non-goals (dead by design)
 
 Do not add any of the following — they were retired by ADR 0001 (identity comes from the `.docs/vault` symlink, which pins the exact vault path):

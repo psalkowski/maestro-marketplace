@@ -1,7 +1,7 @@
 {
   "name": "conductor-kit",
   "description": "Conductor integration — GUI/terminal-parity action skills, personal-layer prompt overrides, workspace setup script with docs/graph seeding",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": {
     "name": "Piotr Salkowski"
   }

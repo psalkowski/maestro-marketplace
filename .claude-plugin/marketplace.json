@@ -20,19 +20,19 @@
     {
       "name": "docs-obsidian",
       "description": "Obsidian driver for the docs-hub provider contract: vault bootstrap, Backing Store linking into .docs/vault, and an optional MCP add-on with Local REST API port detection",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "source": "./plugins/docs-obsidian"
     },
     {
       "name": "conductor-kit",
       "description": "Conductor integration — GUI/terminal-parity action skills, personal-layer prompt overrides, workspace setup script with docs/graph seeding",
-      "version": "0.2.0",
+      "version": "0.2.1",
       "source": "./plugins/conductor-kit"
     },
     {
       "name": "graphify-kit",
-      "description": "Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, Explore override, session sync hooks, worktree seeding, and a graph-health doctor",
-      "version": "0.5.1",
+      "description": "Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, shipped graph-aware Explore agent, session sync hooks, worktree seeding, and a graph-health doctor",
+      "version": "0.6.0",
       "source": "./plugins/graphify-kit"
     },
     {
