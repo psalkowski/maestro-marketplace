@@ -1,18 +1,23 @@
 ---
-description: Use when executing an implementation plan stored in the project's Obsidian vault in a fresh session, or when the user invokes /spec:execute. Subagent-driven with pinned models, per-task review gates, and escalation-only routing.
+description: Use when executing an implementation plan stored in the project's Docs Root in a fresh session, or when the user invokes /spec:execute. Subagent-driven with pinned models, per-task review gates, and escalation-only routing.
 ---
 
 # spec:execute
 
-Runs a vault plan task-by-task through pinned subagents. Self-contained — no superpowers skills required. This is the **fresh-session handoff** path; if you are still in the session that wrote the spec, prefer same-session execution (see `spec:plan` → execution modes).
+Runs a plan from the Docs Root task-by-task through pinned subagents. Self-contained — no superpowers skills required. This is the **fresh-session handoff** path; if you are still in the session that wrote the spec, prefer same-session execution (see `spec:plan` → execution modes).
 
-## Project config (read this first)
+## Docs protocol (read this first)
 
-Read the `spec` config — the fenced ```json under `## spec configuration`in`CLAUDE.local.md`. It provides `project`, `vault.name`, `vault.root`, `vault.subpath`. **If absent, STOP** and tell the user to run `/spec:setup`. `{subpath}`=`vault.subpath`.
+1. **Resolve the Docs Configuration.** Read the fenced ```json under `## docs configuration` in `CLAUDE.local.md` — it provides `project`, `provider`, and `store`. **If the block is absent, STOP** and tell the user to run `/docs-hub:setup`.
+2. **All doc operations are plain file tools.** Read and write docs with `Read`/`Write`/`Edit`/`Glob` against the Docs Root: `.docs/vault/...`. No MCP tools, no size workarounds — plain `Read` has no truncation limits.
+3. **Respect `_index.md` on every new note** — copy the target folder's frontmatter template; never invent frontmatter.
+4. **Missing or dangling Docs Root.** If `.docs/vault` is missing or a dangling symlink, **STOP** and point the user at `/docs-hub:setup` (or conductor-kit worktree seeding in a Conductor workspace).
+
+For future remote providers (Notion, GDrive), the Docs Root is a read-only mirror: write via the driver API and re-sync (ADR 0001).
 
 ## Workflow
 
-1. **Load the plan from the vault.** Confirm the active vault first: `mcp__obsidian__vault_read` `{subpath}/_index.md`, check its `vault:` frontmatter equals `vault.name`; mismatch → **STOP** and ask the user to open the right vault. Then read the plan (`vault_get_document_map`, then `vault_read` by heading for large plans) and its linked spec's **Key facts** section. The plan's **Execution model policy** table is the routing source of truth. Agents are namespaced — use `spec:plan-executor`, `spec:plan-executor-light`, `spec:plan-executor-heavy`, `spec:plan-reviewer`; map bare or legacy names from older plans onto these.
+1. **Load the plan.** Read the plan from `.docs/vault/Plans/` and its linked spec's **Key facts** section. The plan's **Execution model policy** table is the routing source of truth. Agents are namespaced — use `spec:plan-executor`, `spec:plan-executor-light`, `spec:plan-executor-heavy`, `spec:plan-reviewer`; map bare or legacy names from older plans onto these.
 
 2. **Track tasks.** Create one task-list item per plan task; mark in_progress/completed as you go.
 
@@ -30,4 +35,4 @@ Read the `spec` config — the fenced ```json under `## spec configuration`in`CL
 
 ## Requires
 
-The agents `spec:plan-executor`, `spec:plan-executor-light`, `spec:plan-executor-heavy`, `spec:plan-reviewer` (ship with this plugin) and the `obsidian` MCP.
+The agents `spec:plan-executor`, `spec:plan-executor-light`, `spec:plan-executor-heavy`, `spec:plan-reviewer` (ship with this plugin) and a configured Docs Root (via `docs-hub:setup`).

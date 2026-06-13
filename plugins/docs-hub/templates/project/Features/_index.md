@@ -3,7 +3,7 @@ type: note
 ---
 # Feature Backlog
 
-One file per candidate feature. Pick one, brainstorm via `spec:brainstorm`, spec to `Specs/`, plan to `Plans/`.
+One file per candidate feature. Pick one, take it through `spec:plan`, spec to `Specs/`, plan to `Plans/`.
 
 Status legend: `mvp` = first release; `post-mvp` = roadmap, anchored on MVP; `deferred` = valuable but not until the substance underneath exists.
 

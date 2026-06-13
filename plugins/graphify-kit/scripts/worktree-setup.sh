@@ -3,10 +3,16 @@
 # checkout, fix the non-portable metadata, then incrementally sync to the
 # worktree's branch state (usually a handful of files, often a no-op).
 #
+# Usage: bash worktree-setup.sh        (no positional arguments)
+#   Workspace path: $CONDUCTOR_WORKSPACE_PATH, else $PWD.
+#   Main checkout:  $CONDUCTOR_ROOT_PATH, else derived from the worktree's
+#                   shared git dir (git rev-parse --git-common-dir).
+# Callers (e.g. conductor-kit's generated setup.sh) either rely on the
+# Conductor env vars or cd into the worktree before invoking.
+#
 # Works with any worktree manager. Conductor's env vars are honored when
-# present (CONDUCTOR_WORKSPACE_PATH / CONDUCTOR_ROOT_PATH); otherwise the
-# main checkout is derived from the worktree's shared git dir, so the same
-# script works for plain `git worktree` and other tools.
+# present; otherwise the main checkout is derived from the worktree's shared
+# git dir, so the same script works for plain `git worktree` and other tools.
 #
 # /graphify-kit:setup copies this script (plus sync.sh and sync_helper.py)
 # into <repo>/scripts/graphify/ so worktree bootstrap is committed with the

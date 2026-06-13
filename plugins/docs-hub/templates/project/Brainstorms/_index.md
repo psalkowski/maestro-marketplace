@@ -3,7 +3,7 @@ type: note
 ---
 # Brainstorms
 
-Output from `superpowers:brainstorming`. Exploratory thinking that hasn't crystallised into a spec yet.
+Exploratory output from `spec:plan`. Thinking that hasn't crystallised into a spec yet.
 
 ## Frontmatter template (copy for a new brainstorm)
 

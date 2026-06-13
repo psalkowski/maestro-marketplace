@@ -19,4 +19,4 @@ ships-with: "[[<feature-slug>]]"    # co-shipped feature; null if none
 ---
 ```
 
-Links point child → parent. Reference glossary terms in the body as `[[<context-slug>#Term]]`. Specs from `spec:brainstorm` carry a `-design` suffix and a `## Design` section.
+Links point child → parent. Reference glossary terms in the body as `[[<context-slug>#Term]]`. Specs from `spec:plan` carry a `-design` suffix and a `## Design` section.

@@ -1,0 +1,8 @@
+{
+  "name": "docs-obsidian",
+  "description": "Obsidian driver for the docs-hub provider contract: vault bootstrap, Backing Store linking into .docs/vault, and an optional MCP add-on with Local REST API port detection",
+  "version": "0.1.0",
+  "author": {
+    "name": "Piotr Salkowski"
+  }
+}
