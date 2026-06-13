@@ -19,8 +19,8 @@ This repo has a symbol graph at `graphify-out/graph.json`. To locate code or tra
 
 **FORBIDDEN — the actual leaks, ordered by frequency. Doing any of them is the failure:**
 
-1. `grep -n "<symbol>"` (including batched `grep -n "A\|B\|C"`) to find a symbol or its line — the directory already printed it; Read or `explain` each name. The #1 leak.
-2. `grep -r`/`grep -rn`/`rg` for where something is defined or used — that is `graphify explain`/`affected`.
+1. `grep -n "<symbol>"` in a code file (including batched `grep -n "A\|B\|C"`, or to enumerate what a file defines) — the directory already printed each symbol's line; for a file's members/exports use `graphify explain "<dir>_<stem>"` (its underscore node ID), never `grep -n` the file. The #1 leak.
+2. `grep -r`/`grep -rn`/`rg` to find every usage or reference of a symbol — that is `graphify affected "<S>"` (the complete caller/dependent list, including re-exports a text grep misses). `grep -rn` over code is the leak.
 3. `find` / `ls | grep` to locate a file — the directory's 2nd column printed the path, or `affected "<a symbol you know>"`.
 4. `grep`/`rg` on `graph.json` itself — `jq` reads it for names, `graphify` for relationships.
 5. piping `jq`/`graphify` output to `head`/`tail` — both are small; truncating drops the symbol you need next.

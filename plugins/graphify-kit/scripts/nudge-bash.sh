@@ -13,7 +13,7 @@ esac
 
 case "$CMD" in
   *grep*|*rg\ *|*ripgrep*|*find\ *|*fd\ *|*ack\ *|*ag\ *)
-    printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"graphify: once grep gives you a symbol name, switch — `graphify explain \"<ExactSymbol>\"` maps callers/callees/imports with file:line in ~15 lines; `graphify affected \"<Symbol>\"` shows change impact. Verify the returned Source: path. No symbol yet? Run the symbol directory from the Graphify section of CLAUDE.md to enumerate real names. Never run `graphify query` (BFS flood, returns neighborhoods, not matches). grep stays right for string literals and exhaustive enumeration."}}'
+    printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"graphify: LOCATE code through the graph, not this grep. Flow: no symbol yet → run the jq symbol directory (harvests real names + their file:line); have a name → `graphify explain \"<Name>\"` (definition, callers, callees, imports); every usage / \"where is X used\" / blast radius → `graphify affected \"<Name>\"` (this replaces `grep -rn`); how two symbols connect → `graphify path \"<A>\" \"<B>\"`. Verify the returned Source: path; never `graphify query` (it floods). Grep is ONLY for raw text the graph cannot index — template HTML/markup, a string literal, a log line — never a symbol, its definition, or its usages."}}'
     ;;
 esac
 exit 0
