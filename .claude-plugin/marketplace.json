@@ -1,19 +1,44 @@
 {
-  "name": "piotrs-claude-marketplace",
+  "name": "maestro-marketplace",
+  "description": "Provider-agnostic docs, knowledge graphs, spec workflow, and Conductor integration for Claude Code. Run /maestro:setup to onboard a project.",
   "owner": {
     "name": "Piotr Salkowski"
   },
   "plugins": [
     {
+      "name": "maestro",
+      "description": "Start here. The marketplace's front door: /maestro:setup interviews you in plain terms (where docs live, Conductor, knowledge graph, spec workflow), then installs and configures the right plugins in the right order — no need to know docs-hub, docs-obsidian, spec, conductor-kit, or graphify-kit by name",
+      "version": "0.1.0",
+      "source": "./plugins/maestro"
+    },
+    {
+      "name": "docs-hub",
+      "description": "Provider-agnostic project docs: a per-repo Docs Root at .docs/vault (self-ignoring, always a symlink to a durable Backing Store) that consumer plugins read AND write with plain file tools; a unified `## docs configuration` block ({project, provider, store}) in CLAUDE.local.md; the filesystem provider (~/.docs/<project>) built in; and a single front-door setup that migrates legacy `## spec configuration` blocks and delegates driver work to provider plugins like docs-obsidian",
+      "version": "0.1.0",
+      "source": "./plugins/docs-hub"
+    },
+    {
+      "name": "docs-obsidian",
+      "description": "Obsidian driver for the docs-hub provider contract: vault bootstrap, Backing Store linking into .docs/vault, and an optional MCP add-on with Local REST API port detection",
+      "version": "0.1.0",
+      "source": "./plugins/docs-obsidian"
+    },
+    {
+      "name": "conductor-kit",
+      "description": "Conductor integration — GUI/terminal-parity action skills, personal-layer prompt overrides, workspace setup script with docs/graph seeding",
+      "version": "0.2.0",
+      "source": "./plugins/conductor-kit"
+    },
+    {
       "name": "graphify-kit",
       "description": "Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, Explore override, session sync hooks, worktree seeding, and a graph-health doctor",
-      "version": "0.4.0",
+      "version": "0.5.0",
       "source": "./plugins/graphify-kit"
     },
     {
       "name": "spec",
-      "description": "Vault-backed spec workflow: spec:plan is the single front door (brainstorm + grill + spec, with an optional lean plan doc and an execution-mode decision); spec:execute runs handed-off plans through pinned subagents. Self-contained; reads per-project settings from a JSON block in CLAUDE.local.md.",
-      "version": "0.2.0",
+      "description": "Provider-agnostic spec workflow (storage via docs-hub): spec:plan is the single front door (brainstorm + grill + spec, with an optional lean plan doc and an execution-mode decision); spec:execute runs handed-off plans through pinned subagents. Self-contained (no superpowers dependency); reads/writes project docs with plain file tools on the .docs/vault Docs Root.",
+      "version": "0.3.0",
       "source": "./plugins/spec"
     }
   ]
