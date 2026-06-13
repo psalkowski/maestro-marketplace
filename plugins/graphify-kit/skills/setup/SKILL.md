@@ -52,19 +52,21 @@ Idempotency: re-running replaces the block in whichever file currently holds it;
 
 Note: if the repo previously ran `graphify claude install`, its query-centric section and PreToolUse hook are superseded by this plugin — remove them (the upstream section steers agents to `graphify query`, which returns BFS neighborhoods, not matches; see the protocol for the measured evidence). That legacy section satisfies rule 2, so install the managed block into `CLAUDE.md` and delete the legacy lines.
 
-## Step 4 — The graph-aware Explore agent
+## Step 4 — Install the Explore agent (native description, graph body)
 
-This plugin **ships** a graph-aware Explore agent (`graphify-kit:Explore`, at `${CLAUDE_PLUGIN_ROOT}/agents/explore.md`). It is available in every repo with the plugin installed, updates with `/plugin marketplace update`, and self-degrades to plain Grep/Glob/Read where no graph exists. The CLAUDE.md block (Step 3) carries the rule that routes the main loop to it.
-
-Plugin agents are **namespaced** (`graphify-kit:Explore`), so the shipped agent cannot _shadow_ the built-in `Explore` by name — the prefer-rule is what makes the main loop dispatch it instead of the bare native Explore. For the stronger guarantee of shadowing the native `Explore` by name (it intercepts even "use Explore" muscle memory), or for a hand-tuned, repo-specific superset, **optionally** copy the agent to the project:
+Install the project-level Explore override **by default** — it is the mechanism, not an option:
 
 ```bash
 cp "${CLAUDE_PLUGIN_ROOT}/agents/explore.md" .claude/agents/explore.md
 ```
 
-A project-level agent named `Explore` shadows the built-in at session start. **If `.claude/agents/explore.md` already exists with richer, project-tuned content, leave it** — never flatten a superset to the generic agent; hand-port any new protocol rules into it instead, and show a diff before any overwrite.
+Why a project file and not just the shipped `graphify-kit:Explore`? Plugin agents are **namespaced** (`graphify-kit:Explore`) and cannot _shadow_ the built-in `Explore` by name. A project `.claude/agents/explore.md` named `Explore` **does** shadow the built-in at session start — so when the main loop dispatches "Explore" it transparently gets the graph-aware one. Without this file (and with no bias in the CLAUDE.md block — see below), the main loop would dispatch the blind built-in Explore.
 
-The agent file (plugin or project copy) is the **only** channel that carries the protocol into a subagent: subagents do not inherit CLAUDE.md, and PreToolUse hook nudges do not reach subagent tool calls — which is why the rules in it are mechanical and action-triggered (pre-Read explain gate).
+**The agent's `description` is the built-in Explore's description, verbatim — on purpose.** The decision _whether to delegate_ should be made on the task's shape using the **native** semantics, unaware that the agent it would get is graph-aware. So the CLAUDE.md block carries **no** "prefer this Explore / never the native one" rule — the graph-awareness lives entirely in the agent **body**, invisible to the dispatch decision. (Rationale: an explicit "prefer the graph Explore" nudge skews the model toward over-delegating — measured on a single-domain trace that delegated where solo was cheaper; a native-described shadow lets it delegate on merit and still get the graph.)
+
+**If `.claude/agents/explore.md` already exists with richer, project-tuned content, leave it** — never flatten a superset; hand-port any new protocol rules into it, and show a diff before any overwrite. The one hard requirement: its `description` must be the built-in Explore's, verbatim.
+
+The agent file is the **only** channel that carries the protocol into a subagent: subagents do not inherit CLAUDE.md, and PreToolUse hook nudges do not reach subagent tool calls — which is why the rules in it are mechanical and action-triggered (pre-Read explain gate; `affected`-for-impl).
 
 ## Step 5 — Worktree seeding
 

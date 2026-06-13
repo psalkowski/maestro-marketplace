@@ -29,14 +29,15 @@ Then, in each repo to onboard (main checkout, not a worktree):
 
 ## What's inside
 
-| Component                 | Purpose                                                                                                                                                                                            |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/graphify-kit:setup`     | Guided onboarding: CLI install, exclusion analysis → `.graphifyignore` proposal, AST build (zero LLM), CLAUDE.md protocol section, shipped Explore agent (optional project copy), worktree seeding |
-| `/graphify-kit:doctor`    | Health checks with prescribed repairs: baseline drift, manifest key hygiene (the double-extraction trap), ghost nodes, nested graphify-out, protocol presence, explain spot-checks                 |
-| `/graphify-kit:sync-docs` | Deliberate LLM indexing of in-repo docs plus the project's Docs Root (`.docs/vault/`), with model discipline (mid-tier subagents only), semantic-cache reuse, and honest verification              |
-| Hooks (automatic)         | SessionStart/Stop incremental AST sync (zero LLM, backgrounded); PreToolUse nudges steering grep→explain re-entry. All no-op instantly in repos without a graph                                    |
-| `templates/`              | The CLAUDE.md protocol section (single source the setup skill installs); the graph-aware `graphify-kit:Explore` agent ships from `agents/`                                                         |
-| `scripts/`                | Portable sync + worktree-seeding scripts; setup copies them into `<repo>/scripts/graphify/` so worktree bootstrap is committed with the repo, not coupled to a plugin cache path                   |
+| Component                 | Purpose                                                                                                                                                                                              |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/graphify-kit:setup`     | Guided onboarding: CLI install, exclusion analysis → `.graphifyignore` proposal, AST build (zero LLM), CLAUDE.md protocol section, native-described Explore override, worktree seeding               |
+| `/graphify-kit:doctor`    | Health checks with prescribed repairs: baseline drift, manifest key hygiene (the double-extraction trap), ghost nodes, nested graphify-out, protocol presence, explain spot-checks                   |
+| `/graphify-kit:sync-docs` | Deliberate LLM indexing of in-repo docs plus the project's Docs Root (`.docs/vault/`), with model discipline (mid-tier subagents only), semantic-cache reuse, and honest verification                |
+| `/graphify-kit:score`     | Mechanical eval scorecard for a session transcript (main loop + subagents): wall-clock, tokens, tool-mix, the by-role grep/find leak count, graphify-verb usage, explain misses. Conductor-agnostic. |
+| Hooks (automatic)         | SessionStart/Stop incremental AST sync (zero LLM, backgrounded); PreToolUse nudges steering grep→explain re-entry. All no-op instantly in repos without a graph                                      |
+| `templates/`              | The CLAUDE.md protocol section (single source the setup skill installs); the graph-aware `graphify-kit:Explore` agent ships from `agents/`                                                           |
+| `scripts/`                | Portable sync + worktree-seeding scripts; setup copies them into `<repo>/scripts/graphify/` so worktree bootstrap is committed with the repo, not coupled to a plugin cache path                     |
 
 ## Worktree managers
 

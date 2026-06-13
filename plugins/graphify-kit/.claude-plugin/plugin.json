@@ -1,7 +1,7 @@
 {
   "name": "graphify-kit",
   "description": "Battle-tested graphify (knowledge graph) setup for any repo: guided onboarding with exclusion analysis, agent navigation protocol (symbol directory → explain → targeted Read), Explore agent override, session sync hooks, worktree seeding, and a doctor for graph health",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "author": {
     "name": "Piotr Salkowski"
   }
