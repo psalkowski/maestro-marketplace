@@ -33,6 +33,12 @@ Rules learned from real failures:
 - Do not use `graphify query` — it has no semantic matching, and even a single domain term seeds on the wrong nodes and floods irrelevant neighbors. The symbol directory (step 1) replaces it.
 - If `graphify-out/graph.json` does not exist, fall back to plain Grep/Glob/Read.
 
-## Output
+## Output — a findings map, not an answer
 
-Return a concise structured summary: findings as claims each backed by `file:line`, the relationship map where relevant, and explicit "not found" statements for things you ruled out. Never return full file contents, long code excerpts, or command transcripts.
+You produce **evidence for the parent to author from and spot-check — not the final, user-facing answer.** A polished write-up gets rubber-stamped as truth; a tagged evidence map invites the parent to verify. Return:
+
+- One line per claim, each with its **anchor** (`file:line`) and an **evidence tag**: `read` (you opened the code at that line) · `explain` (from a graphify edge list, not read) · `grep` (string match) · `inferred` (deduced, not directly observed).
+- The **load-bearing** claims (the ones an answer hinges on) marked explicitly. For each, the tag MUST be `read` — if you only have `explain`/`grep`, open the cited line and confirm before marking it, or say you could not verify it. A definition line comes from reading the definition, never a call site.
+- Explicit **could-not-determine** and **ruled-out** lists.
+
+Never: write an end-user-facing narrative or polished answer; **synthesize illustrative code** (an invented snippet teaches the parent a falsehood — cite real code only); or dump full file contents or command transcripts. The parent owns the prose and will re-read your load-bearing anchors.
