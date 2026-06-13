@@ -19,7 +19,7 @@ individually).
 
 | Plugin | Description | Version |
 | --- | --- | --- |
-| maestro | Start here. `/maestro:setup` interviews you (docs location, Conductor, knowledge graph, spec workflow) and installs + configures the right plugins in order | 0.1.0 |
+| maestro | Start here. `/maestro:setup` interviews you (docs location, Conductor, knowledge graph, spec workflow) and installs + configures the right plugins in order | 0.1.1 |
 | docs-hub | Provider-agnostic project docs: per-repo Docs Root at `.docs/vault` (symlink to a durable Backing Store), unified `## docs configuration` block, built-in filesystem provider, front-door setup with legacy migration | 0.1.0 |
 | docs-obsidian | Obsidian driver for the docs-hub contract: vault bootstrap, Backing Store linking into `.docs/vault`, optional MCP add-on with Local REST API port detection | 0.1.0 |
 | conductor-kit | Conductor integration: discovery-first GUI/terminal-parity action skills (create-pr, code-review, fix-errors, resolve-conflicts, rename-branch, address-cr), grounded in Conductor's real defaults; personal-layer prompt overrides; workspace setup script with docs/graph seeding | 0.2.0 |

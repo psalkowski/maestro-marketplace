@@ -1,4 +1,4 @@
-# maestro (v0.1.0)
+# maestro (v0.1.1)
 
 **Start here.** maestro is the marketplace's front door — the one plugin you install to onboard a
 repo without learning the others by name. Run `/maestro:setup` and it interviews you in plain terms,

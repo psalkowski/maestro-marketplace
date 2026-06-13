@@ -1,14 +1,25 @@
 # Interview Map
 
-The hand-authored knowledge maestro relies on: which question maps to which plugin set,
-the dependency Setup Order, and a one-line pitch per plugin. This is the **single maintenance
-surface** when a new marketplace plugin ships — add a question/option line here and an entry to
-the catalog (`marketplace.json`); `skills/setup/SKILL.md` reads its intent from this file and
-needs no change.
+The hand-authored knowledge maestro relies on: the per-capability signals, which capability maps to
+which plugin set, the dependency Setup Order, and a one-line pitch per plugin. This is the **single
+maintenance surface** when a new marketplace plugin ships — add a capability/signal block here and an
+entry to the catalog (`marketplace.json`); `skills/setup/SKILL.md` reads its intent from this file
+and needs no change.
 
-Maestro never hardcodes the installable plugin list — that comes from the **Dynamic Catalog**
-(the live `marketplace.json` + `claude plugin list`). This map only carries the
-*question → plugin-set* mapping and the ordering.
+Maestro never hardcodes the installable plugin list — that comes from the **Dynamic Catalog** (the
+live `marketplace.json` + `claude plugin list`). This map carries the *signal → plugin-set* mapping
+and the ordering.
+
+## The skip gate
+
+**The ONLY thing that marks a capability "already handled" is the plugin being installed
+(`claude plugin list`).** The repo artifacts below are evidence the capability is **in use** — they
+make maestro **propose** the plugin, they never suppress it. Classify each capability:
+
+- plugin **installed** + config present → **HANDLED** (update check only);
+- plugin **not installed** + an in-use artifact → **PROPOSE** (install + configure); a legacy docs
+  block → **MIGRATE**;
+- plugin **not installed** + no artifact → **ASK**.
 
 ---
 
@@ -24,43 +35,45 @@ Maestro never hardcodes the installable plugin list — that comes from the **Dy
 
 ---
 
-## Questions → plugin sets
+## Capabilities → signals → plugin sets
 
-Ask **one question at a time**, in order, **skipping any question whose gap is already satisfied**
-(see "Skip-if-satisfied" per question). Each answer resolves to zero or more plugins; the union
-of all answers is the chosen plugin set.
+For each, the **HANDLED gate** is the plugin in `claude plugin list`. Below that gate, the listed
+artifact decides PROPOSE/MIGRATE vs ASK.
 
-### Q1 — Where should this project's docs (specs, plans, ADRs, notes) live?
+### Docs — where specs, plans, ADRs, notes live
 
-- **filesystem** (default) → `docs-hub`
-- **obsidian** → `docs-hub` + `docs-obsidian` (highlight this option if a vault or a listening Obsidian REST port was detected)
-- **skip docs** → (no plugins; also suppresses Q4)
+- **HANDLED gate:** `docs-hub` installed AND a `## docs configuration` block in `CLAUDE.local.md`.
+- **MIGRATE:** a legacy `## spec configuration` block with `vault.*` keys exists (old Obsidian setup)
+  → propose `docs-hub` + `docs-obsidian`; `/docs-hub:setup` migrates the block, vault content untouched.
+- **PROPOSE:** a listening Obsidian REST port (27123/27124) or an obvious vault, but no docs block →
+  propose `docs-hub` + `docs-obsidian`.
+- **ASK Q1 — Where should this project's docs live?** filesystem (default) → `docs-hub`; obsidian
+  (highlight if a port/vault was detected) → `docs-hub` + `docs-obsidian`; skip docs → none (also
+  suppresses spec).
 
-Skip-if-satisfied: a `## docs configuration` block already exists in `CLAUDE.local.md`. If present,
-report the configured provider and do not ask; treat docs as "not skipped" for Q4.
+### Spec — feature-spec workflow
 
-### Q2 — Do you use Conductor for this repo?
+- **HANDLED gate:** `spec` installed AND a (new, minimal) `## spec configuration` block.
+- **PROPOSE/MIGRATE:** a legacy `## spec configuration` exists but `spec` isn't installed → propose
+  `spec` (alongside the docs migration).
+- **ASK Q4** (only if docs were not skipped): Feature-spec workflow (`/spec:plan` / `/spec:execute`)?
+  yes → `spec`; no → none.
 
-- **yes** (default if `.conductor/` exists or the path looks like a Conductor workspace) → `conductor-kit`
-- **no** → (no plugins)
+### Conductor
 
-Skip-if-satisfied: a `.conductor/settings.local.toml` already exists (conductor-kit already wired).
+- **HANDLED gate:** `conductor-kit` installed.
+- **PROPOSE:** `.conductor/` exists (even with a hand-written `settings.local.toml` — that is the
+  user's own config, NOT proof conductor-kit is wired) → propose `conductor-kit`; its setup merges
+  idempotently and preserves the user's keys.
+- **ASK Q2** (default yes if `.conductor/` exists): Do you use Conductor for this repo? yes →
+  `conductor-kit`; no → none.
 
-### Q3 — Want a code knowledge graph?
+### Knowledge graph
 
-- **yes** → `graphify-kit` (note: its setup installs the graphify CLI prerequisite if missing — maestro does not)
-- **no** → (no plugins)
-
-Skip-if-satisfied: `graphify-out/` already exists in the repo.
-
-### Q4 — Feature-spec workflow (`/spec:plan` / `/spec:execute`)?
-
-Only offered if docs were **not** skipped in Q1 (spec needs docs configured).
-
-- **yes** → `spec`
-- **no** → (no plugins)
-
-Skip-if-satisfied: a `## spec configuration` block already exists in `CLAUDE.local.md`.
+- **HANDLED gate:** `graphify-kit` installed.
+- **PROPOSE:** `graphify-out/` exists but `graphify-kit` isn't installed → propose `graphify-kit`.
+- **ASK Q3:** Want a code knowledge graph? yes → `graphify-kit` (its setup installs the graphify CLI
+  prerequisite if missing — maestro does not); no → none.
 
 ---
 
@@ -87,8 +100,9 @@ Setup entry points (invoke by exact slash command once the skill is loaded this 
 
 ## Adding a new marketplace plugin
 
-1. Ensure it has an entry in `marketplace.json` (the Dynamic Catalog picks up its name/version/description automatically).
+1. Ensure it has an entry in `marketplace.json` (the Dynamic Catalog picks up name/version/description automatically).
 2. Add it to the pitch table above.
-3. Add (or extend) a question/option line that maps a plain-language choice to the new plugin.
+3. Add a capability block: the HANDLED gate (its installed name + config artifact), the in-use
+   artifact that triggers PROPOSE, and the ASK question that maps a plain choice to the plugin.
 4. Insert it at the correct position in the **Setup Order** if it has a dependency relationship.
 5. List its setup entry point. No change to `skills/setup/SKILL.md` is required.
