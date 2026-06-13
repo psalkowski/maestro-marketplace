@@ -57,10 +57,10 @@ Note: if the repo previously ran `graphify claude install`, its query-centric se
 Install the project-level Explore override **by default** — it is the mechanism, not an option:
 
 ```bash
-cp "${CLAUDE_PLUGIN_ROOT}/agents/explore.md" .claude/agents/explore.md
+cp "${CLAUDE_PLUGIN_ROOT}/templates/explore-agent.md" .claude/agents/explore.md
 ```
 
-Why a project file and not just the shipped `graphify-kit:Explore`? Plugin agents are **namespaced** (`graphify-kit:Explore`) and cannot _shadow_ the built-in `Explore` by name. A project `.claude/agents/explore.md` named `Explore` **does** shadow the built-in at session start — so when the main loop dispatches "Explore" it transparently gets the graph-aware one. Without this file (and with no bias in the CLAUDE.md block — see below), the main loop would dispatch the blind built-in Explore.
+Why a project file? The plugin deliberately **registers no agent of its own** — the Explore protocol ships only as this template and is copied into the project. So Claude never sees a separate `graphify-kit:Explore` option; it sees exactly **one** `Explore` (this project file, carrying the built-in's description), which shadows the built-in by name at session start and transparently runs the graph protocol from its body. (A plugin agent would be namespaced `graphify-kit:Explore`, couldn't shadow the built-in anyway, and would dilute the "only one Explore" intent.) Without this file — and with no bias in the CLAUDE.md block (see below) — the main loop would dispatch the blind built-in Explore.
 
 **The agent's `description` is the built-in Explore's description, verbatim — on purpose.** The decision _whether to delegate_ should be made on the task's shape using the **native** semantics, unaware that the agent it would get is graph-aware. So the CLAUDE.md block carries **no** "prefer this Explore / never the native one" rule — the graph-awareness lives entirely in the agent **body**, invisible to the dispatch decision. (Rationale: an explicit "prefer the graph Explore" nudge skews the model toward over-delegating — measured on a single-domain trace that delegated where solo was cheaper; a native-described shadow lets it delegate on merit and still get the graph.)
 

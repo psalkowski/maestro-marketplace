@@ -32,7 +32,7 @@
     {
       "name": "graphify-kit",
       "description": "Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, native-described Explore override, session sync hooks, worktree seeding, a graph-health doctor, and a transcript scorecard",
-      "version": "0.9.0",
+      "version": "0.9.1",
       "source": "./plugins/graphify-kit"
     },
     {
