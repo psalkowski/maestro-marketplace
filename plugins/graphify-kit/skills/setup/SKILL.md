@@ -38,6 +38,8 @@ git rev-parse HEAD > graphify-out/.graphify-baseline-sha
 
 This is deterministic and free — no API keys needed for a code-only corpus. Report node/edge counts. If the user wants docs/knowledge-base content semantically indexed (LLM extraction), point them to `/graphify-kit:sync-docs` afterwards — never run semantic extraction inline here, and never with a top-tier model.
 
+**Coverage caveat (surface it in the report).** The extractor parses code (`.ts`/`.js`/`.py`/…) but has **no Angular/HTML-template or `.scss` parser** — framework view files are silently unindexed. If this is an Angular repo (`angular.json` present, `*.component.html` siblings) or Vue (`*.vue`), tell the user plainly: template/binding logic (`*ngIf`/`@if`, Vue `<template>`) won't be in the graph, so "which view renders" questions must grep the sibling template directly — `explain` locates the component class, the template is read/grepped. The managed protocol block (Step 3) already carries the agent-facing version of this rule; the report note just sets expectations up front.
+
 ## Step 3 — Install the navigation protocol
 
 Install `${CLAUDE_PLUGIN_ROOT}/templates/claude-md-section.md` as a managed block (wrapped in `<!-- graphify-kit:begin -->` / `<!-- graphify-kit:end -->` markers) into exactly ONE project-level memory file. Check both `CLAUDE.md` and `CLAUDE.local.md`, then pick the target in this order:
