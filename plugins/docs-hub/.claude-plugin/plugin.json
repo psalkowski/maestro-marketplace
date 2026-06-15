@@ -1,7 +1,7 @@
 {
   "name": "docs-hub",
   "description": "Provider-agnostic project docs: a per-repo Docs Root at .docs/vault (self-ignoring, always a symlink to a durable Backing Store) that consumer plugins read AND write with plain file tools; a unified `## docs configuration` block ({project, provider, store}) in CLAUDE.local.md; the filesystem provider (~/.docs/<project>) built in; and a single front-door setup that migrates legacy `## spec configuration` blocks and delegates driver work to provider plugins like docs-obsidian",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "Piotr Salkowski"
   }

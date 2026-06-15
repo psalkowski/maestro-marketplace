@@ -41,7 +41,7 @@ No legacy block → continue to Step 2.
 
 Propose defaults; let the user accept or override:
 
-- **`project`** — derive from the git repo name: run `git remote get-url origin` and take the basename without `.git`; fall back to the repo directory name. Show it; let the user correct it.
+- **`project`** — propose a default from the git repo name (`git remote get-url origin` basename without `.git`; fall back to the repo directory name), but **do not silently accept it** — the repo name often diverges from the project's canonical name (a rename, a codename, or an existing vault folder named differently). Present the proposed default and **ask the user to confirm or override it before continuing**. For the `obsidian` provider this name becomes the `Projects/<project>/` folder, so call that out and — when a vault root is already known — list the existing `Projects/*` folders so the user can match an established one (e.g. a renamed project) instead of spawning an orphan scaffold under the repo name. Proceed only once the user has explicitly confirmed.
 - **`provider`** — ask: **`filesystem`** (default — no extra tooling, store under `~/.docs/`) or **`obsidian`** (docs live in an Obsidian vault).
 - **`store`** — always stored as an **absolute** path (expand `~`):
   - `filesystem` → propose `~/.docs/<project>/`.
@@ -53,9 +53,9 @@ Show the full JSON and get explicit confirmation:
 
 ```json
 {
-  "project": "<repo-name>",
+  "project": "<project>",
   "provider": "filesystem",
-  "store": "/Users/you/.docs/<repo-name>"
+  "store": "/Users/you/.docs/<project>"
 }
 ```
 

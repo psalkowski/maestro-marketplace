@@ -1,6 +1,6 @@
-# conductor-kit (v0.2.0)
+# conductor-kit (v0.3.0)
 
-Conductor integration for this marketplace's tooling: GUI/terminal-parity **Action Skills**, personal-layer prompt overrides, and a generated workspace setup script that seeds docs and knowledge graphs into every new Conductor workspace.
+Conductor integration for this marketplace's tooling: GUI/terminal-parity **Action Skills**, personal-layer prompt overrides, and generated workspace lifecycle scripts that seed docs and knowledge graphs into every new Conductor workspace, run its start command, and stop its processes on archive.
 
 ## Why
 
@@ -61,17 +61,19 @@ Then, in each repo (the skill insists on the **main checkout** — run from a wo
 
 This writes:
 
-- `.conductor/settings.local.toml` — the **five** native prompt overrides plus `scripts.setup` wiring, merged idempotently (your other keys, including any `general`, survive untouched).
-- `.conductor/setup.sh` — runs in every new Conductor workspace: seeds `.docs/vault` (symlink to the backing store read from the `## docs configuration` block in `CLAUDE.local.md`), copies `CLAUDE.local.md` from the main checkout if absent, and runs graphify-kit's `scripts/graphify/worktree-setup.sh` when a graph exists on main. Self-contained — no plugin cache paths; all paths quoted (iCloud stores contain spaces).
+- `.conductor/settings.local.toml` — the **five** native prompt overrides plus `scripts.setup` / `scripts.run` / `scripts.archive` wiring, merged idempotently (your other keys, including any `general`, survive untouched).
+- `.conductor/setup.sh` — runs in every new Conductor workspace: seeds `.docs/vault` (symlink to the backing store read from the `## docs configuration` block in `CLAUDE.local.md`, **re-pointed if it's stale**), copies `CLAUDE.local.md` from the main checkout if absent, and runs graphify-kit's `scripts/graphify/worktree-setup.sh` when a graph exists on main.
+- `.conductor/run.sh` — the workspace's start command, seeded on first creation from the detected stack (`yarn`/`npm`/`pnpm` `start`/`dev`, plus a couple of non-Node stacks; a clear TODO if nothing is detected).
+- `.conductor/archive.sh` — stops only the processes started **from that workspace** (matched by argv or working directory), so archiving one workspace never disturbs another's dev servers; shared/external services are left alone.
 
-Both files are kept git-invisible (checked with `git check-ignore`, added to `.git/info/exclude` only when not already covered).
+All are self-contained — no plugin cache paths; all paths quoted (iCloud stores contain spaces) — and kept git-invisible (checked with `git check-ignore`, added to `.git/info/exclude` only when not already covered).
 
 ## Regeneration and the project-specific section
 
-`setup.sh` ends with:
+Each generated script ends with:
 
 ```bash
 # --- project-specific (preserved) ---
 ```
 
-Everything below that marker is yours — repo-specific bootstrap (env files, `npm install`, database seeds) goes there. Re-running `/conductor-kit:setup` regenerates only the managed part above the marker and carries your section over byte-for-byte.
+Everything below that marker is yours — `setup.sh` repo bootstrap (env files, `npm install`, database seeds), `run.sh`'s start command, `archive.sh`'s extra teardown. Re-running `/conductor-kit:setup` regenerates only the managed part above the marker and carries your section over byte-for-byte.
