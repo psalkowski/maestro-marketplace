@@ -14,7 +14,7 @@
     {
       "name": "docs-hub",
       "description": "Provider-agnostic project docs: a per-repo Docs Root at .docs/vault (self-ignoring, always a symlink to a durable Backing Store) that consumer plugins read AND write with plain file tools; a unified `## docs configuration` block ({project, provider, store}) in CLAUDE.local.md; the filesystem provider (~/.docs/<project>) built in; and a single front-door setup that migrates legacy `## spec configuration` blocks and delegates driver work to provider plugins like docs-obsidian",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "source": "./plugins/docs-hub"
     },
     {
@@ -25,8 +25,8 @@
     },
     {
       "name": "conductor-kit",
-      "description": "Conductor integration — GUI/terminal-parity action skills, personal-layer prompt overrides, workspace setup script with docs/graph seeding",
-      "version": "0.2.1",
+      "description": "Conductor integration — GUI/terminal-parity action skills, personal-layer prompt overrides, workspace lifecycle scripts (setup with docs/graph seeding, run, archive)",
+      "version": "0.3.0",
       "source": "./plugins/conductor-kit"
     },
     {
