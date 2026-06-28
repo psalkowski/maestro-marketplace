@@ -14,6 +14,9 @@ This repo has a symbol graph at `graphify-out/graph.json`. To locate code or tra
 1. **No symbol yet** (a concept word like "payment")? Harvest real names — read the WHOLE output, never pipe to `head`/`tail` (truncating drops the symbol you need next):
    `jq -r --arg t "<lowercase-term>" '.nodes[] | select((.label // "") | ascii_downcase | contains($t)) | ((.label | gsub("\\s+"; " "))[0:60]) + "  " + (.source_file // "?") + "  " + (.source_location // "?")' graphify-out/graph.json | sort -u`
    One LITERAL lowercase substring per run (not a regex — `\|` matches nothing). Columns are `symbol  file  line`, so you already have each symbol's `file:line`: Read it directly, never `find` the file or `grep -n` the line.
+   **Know the area but not the symbol** — recovering from an `explain` miss, or locating the impl behind a concept/interface? Harvest by PATH, not name (same rules, still no `find`):
+   `jq -r --arg p "<path-fragment>" '.nodes[] | select((.source_file // "") | contains($p)) | ((.label | gsub("\\s+"; " "))[0:60]) + "  " + (.source_file // "?") + "  " + (.source_location // "?")' graphify-out/graph.json | sort -u`
+   `<path-fragment>` is any slice of the path — a directory, or the hyphenated filename `explain` just rejected. It lists every symbol in matching files: the on-graph replacement for `find -name`/`ls <dir>`, and the correct recovery when `explain` returns `No node matching` for a file.
 2. **Have a name?** `graphify explain "<Name>"` → definition, callers, callees, imports, `file:line` in ~15 lines (cheaper than reading). Per file: the underscore node ID `<dir>_<stem>` (e.g. `repositories_users`). `graphify affected "<Name>"` → who uses/implements it. `graphify path "<A>" "<B>"` → how two known symbols connect.
 3. **Read only to quote the exact lines** the directory/`explain` already located — never to discover what a file contains.
 
@@ -21,7 +24,7 @@ This repo has a symbol graph at `graphify-out/graph.json`. To locate code or tra
 
 1. `grep -n "<symbol>"` in a code file (including batched `grep -n "A\|B\|C"`, or to enumerate what a file defines) — the directory already printed each symbol's line; for a file's members/exports use `graphify explain "<dir>_<stem>"` (its underscore node ID), never `grep -n` the file. The #1 leak.
 2. `grep -r`/`grep -rn`/`rg` to find every usage or reference of a symbol — that is `graphify affected "<S>"` (the complete caller/dependent list, including re-exports a text grep misses). `grep -rn` over code is the leak.
-3. `find` / `ls | grep` to locate a file — the directory's 2nd column printed the path, or `affected "<a symbol you know>"`.
+3. `find` / `ls | grep` to locate a file by its role or name pattern (`*operator*map*`) — harvest by PATH instead (`jq … select(.source_file | contains("<fragment>"))`, the step-1 recipe), or use the directory's file column or `affected "<a symbol you know>"`. (Enumerating a KNOWN dir by extension — `find <dir> -name "*.ts"` — is fine; that is not locating by role.)
 4. `grep`/`rg` on `graph.json` itself — `jq` reads it for names, `graphify` for relationships.
 5. piping `jq`/`graphify` output to `head`/`tail` — both are small; truncating drops the symbol you need next.
 
