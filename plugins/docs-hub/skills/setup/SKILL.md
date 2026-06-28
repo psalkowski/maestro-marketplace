@@ -23,7 +23,7 @@ This skill writes repo-level config (`CLAUDE.local.md`, `.docs/`), so it must ap
 2. If the outputs are **equal**, this is the main checkout — continue here.
 3. If they **differ**, this is a linked worktree. Derive the main checkout path (the parent directory of the common git dir) and ask the user: **configure the main checkout** (recommended — worktrees are then seeded by `conductor-kit:setup`'s script) **or this worktree**? Perform every following step against the chosen root.
 
-Docs *content* writes never need this check — the store is shared through the symlink. Only config-writing skills do.
+Docs _content_ writes never need this check — the store is shared through the symlink. Only config-writing skills do.
 
 ## Step 1 — Legacy migration (`## spec configuration`)
 
@@ -109,4 +109,4 @@ Summarize:
 - Confirmation that `git status --porcelain` shows nothing new from this setup.
 - For the filesystem provider: the store lives outside every repo at `<store>` — **backups are the user's concern**.
 
-The project is then ready for consumer skills (`/spec:plan`, `/graphify-kit:sync-docs`) following `${CLAUDE_PLUGIN_ROOT}/references/docs-protocol.md`.
+The project is then ready for consumer skills (`/spec:plan`) following `${CLAUDE_PLUGIN_ROOT}/references/docs-protocol.md`.

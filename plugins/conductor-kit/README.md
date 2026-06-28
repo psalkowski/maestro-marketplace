@@ -1,6 +1,6 @@
 # conductor-kit (v0.3.0)
 
-Conductor integration for this marketplace's tooling: GUI/terminal-parity **Action Skills**, personal-layer prompt overrides, and generated workspace lifecycle scripts that seed docs and knowledge graphs into every new Conductor workspace, run its start command, and stop its processes on archive.
+Conductor integration for this marketplace's tooling: GUI/terminal-parity **Action Skills**, personal-layer prompt overrides, and generated workspace lifecycle scripts that seed docs into every new Conductor workspace, run its start command, and stop its processes on archive.
 
 ## Why
 
@@ -62,7 +62,7 @@ Then, in each repo (the skill insists on the **main checkout** — run from a wo
 This writes:
 
 - `.conductor/settings.local.toml` — the **five** native prompt overrides plus `scripts.setup` / `scripts.run` / `scripts.archive` wiring, merged idempotently (your other keys, including any `general`, survive untouched).
-- `.conductor/setup.sh` — runs in every new Conductor workspace: seeds `.docs/vault` (symlink to the backing store read from the `## docs configuration` block in `CLAUDE.local.md`, **re-pointed if it's stale**), copies `CLAUDE.local.md` from the main checkout if absent, and runs graphify-kit's `scripts/graphify/worktree-setup.sh` when a graph exists on main.
+- `.conductor/setup.sh` — runs in every new Conductor workspace: seeds `.docs/vault` (symlink to the backing store read from the `## docs configuration` block in `CLAUDE.local.md`, **re-pointed if it's stale**) and copies `CLAUDE.local.md` from the main checkout if absent.
 - `.conductor/run.sh` — the workspace's start command, seeded on first creation from the detected stack (`yarn`/`npm`/`pnpm` `start`/`dev`, plus a couple of non-Node stacks; a clear TODO if nothing is detected).
 - `.conductor/archive.sh` — stops only the processes started **from that workspace** (matched by argv or working directory), so archiving one workspace never disturbs another's dev servers; shared/external services are left alone.
 

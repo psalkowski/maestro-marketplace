@@ -26,13 +26,11 @@ maestro detects what's already configured and **only asks about genuine gaps**, 
    → installs `docs-hub` (filesystem) or `docs-hub` + `docs-obsidian` (Obsidian).
 2. **Do you use Conductor for this repo?** — defaults to yes when a `.conductor/` directory is found.
    → installs `conductor-kit`.
-3. **Want a code knowledge graph?** → installs `graphify-kit` (its own setup installs the graphify CLI
-   prerequisite if it's missing — maestro doesn't).
-4. **Feature-spec workflow?** (only offered if you didn't skip docs) → installs `spec`.
+3. **Feature-spec workflow?** (only offered if you didn't skip docs) → installs `spec`.
 
 After resolving your answers, maestro installs the gaps with
 `claude plugin install <name>@maestro-marketplace`, then runs each plugin's setup skill in
-dependency order: **docs-hub → docs-obsidian → spec → conductor-kit → graphify-kit**.
+dependency order: **docs-hub → docs-obsidian → spec → conductor-kit**.
 
 maestro never writes any configuration itself — every `## docs configuration` block, vault, or
 `settings.toml` is produced by the plugin's own setup skill that maestro delegates to.

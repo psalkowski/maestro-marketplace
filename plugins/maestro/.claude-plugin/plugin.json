@@ -1,6 +1,6 @@
 {
   "name": "maestro",
-  "description": "Start here. The marketplace's front door: /maestro:setup interviews you in plain terms (where docs live, Conductor, knowledge graph, spec workflow), then installs and configures the right plugins in the right order — no need to know docs-hub, docs-obsidian, spec, conductor-kit, or graphify-kit by name",
+  "description": "Start here. The marketplace's front door: /maestro:setup interviews you in plain terms (where docs live, Conductor, spec workflow), then installs and configures the right plugins in the right order — no need to know docs-hub, docs-obsidian, spec, or conductor-kit by name",
   "version": "0.1.1",
   "author": {
     "name": "Piotr Salkowski"

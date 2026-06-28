@@ -7,7 +7,7 @@ entry to the catalog (`marketplace.json`); `skills/setup/SKILL.md` reads its int
 and needs no change.
 
 Maestro never hardcodes the installable plugin list — that comes from the **Dynamic Catalog** (the
-live `marketplace.json` + `claude plugin list`). This map carries the *signal → plugin-set* mapping
+live `marketplace.json` + `claude plugin list`). This map carries the _signal → plugin-set_ mapping
 and the ordering.
 
 ## The skip gate
@@ -25,13 +25,12 @@ make maestro **propose** the plugin, they never suppress it. Classify each capab
 
 ## Plugins (one-line pitch each)
 
-| plugin | pitch |
-| --- | --- |
-| `docs-hub` | Provider-agnostic project docs: one `## docs configuration` block, a Backing Store outside the checkout, and a `.docs/vault` Docs Root every other plugin reads. The storage front door. |
-| `docs-obsidian` | Obsidian driver for docs-hub: points the Backing Store at an Obsidian vault, scaffolds vault-global folders, and offers the optional Obsidian MCP add-on. |
-| `spec` | Feature-spec workflow: `/spec:plan` writes a durable spec into your docs, `/spec:execute` runs handed-off plans. Needs docs configured first. |
-| `conductor-kit` | Wires the repo into Conductor: personal-layer prompt overrides plus a workspace setup script that seeds `.docs/`, `CLAUDE.local.md`, and the graph into every new workspace. |
-| `graphify-kit` | Code knowledge graph: AST graph + agent navigation protocol (symbol directory → explain → targeted Read), session sync hooks, worktree seeding. Requires the graphify CLI (its setup installs it). |
+| plugin          | pitch                                                                                                                                                                                    |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `docs-hub`      | Provider-agnostic project docs: one `## docs configuration` block, a Backing Store outside the checkout, and a `.docs/vault` Docs Root every other plugin reads. The storage front door. |
+| `docs-obsidian` | Obsidian driver for docs-hub: points the Backing Store at an Obsidian vault, scaffolds vault-global folders, and offers the optional Obsidian MCP add-on.                                |
+| `spec`          | Feature-spec workflow: `/spec:plan` writes a durable spec into your docs, `/spec:execute` runs handed-off plans. Needs docs configured first.                                            |
+| `conductor-kit` | Wires the repo into Conductor: personal-layer prompt overrides plus a workspace setup script that seeds `.docs/` and `CLAUDE.local.md` into every new workspace.                         |
 
 ---
 
@@ -56,7 +55,7 @@ artifact decides PROPOSE/MIGRATE vs ASK.
 - **HANDLED gate:** `spec` installed AND a (new, minimal) `## spec configuration` block.
 - **PROPOSE/MIGRATE:** a legacy `## spec configuration` exists but `spec` isn't installed → propose
   `spec` (alongside the docs migration).
-- **ASK Q4** (only if docs were not skipped): Feature-spec workflow (`/spec:plan` / `/spec:execute`)?
+- **ASK Q3** (only if docs were not skipped): Feature-spec workflow (`/spec:plan` / `/spec:execute`)?
   yes → `spec`; no → none.
 
 ### Conductor
@@ -68,13 +67,6 @@ artifact decides PROPOSE/MIGRATE vs ASK.
 - **ASK Q2** (default yes if `.conductor/` exists): Do you use Conductor for this repo? yes →
   `conductor-kit`; no → none.
 
-### Knowledge graph
-
-- **HANDLED gate:** `graphify-kit` installed.
-- **PROPOSE:** `graphify-out/` exists but `graphify-kit` isn't installed → propose `graphify-kit`.
-- **ASK Q3:** Want a code knowledge graph? yes → `graphify-kit` (its setup installs the graphify CLI
-  prerequisite if missing — maestro does not); no → none.
-
 ---
 
 ## Setup Order
@@ -85,8 +77,7 @@ order, skipping plugins not in the chosen set:
 1. `docs-hub` — storage first; every other plugin reads the docs configuration.
 2. `docs-obsidian` — driver; only when Obsidian was chosen, after docs-hub.
 3. `spec` — needs docs configured.
-4. `conductor-kit` — before-last; its setup script seeds a configured Docs Root, so docs/spec come first. Must land on the main checkout.
-5. `graphify-kit` — last; indexes whatever exists.
+4. `conductor-kit` — last; its setup script seeds a configured Docs Root, so docs/spec come first. Must land on the main checkout.
 
 Setup entry points (invoke by exact slash command once the skill is loaded this session):
 
@@ -94,7 +85,6 @@ Setup entry points (invoke by exact slash command once the skill is loaded this 
 - `docs-obsidian` → `/docs-obsidian:setup` (normally pulled in by `/docs-hub:setup` when Obsidian is chosen; can be invoked directly)
 - `spec` → `/spec:setup`
 - `conductor-kit` → `/conductor-kit:setup`
-- `graphify-kit` → `/graphify-kit:setup`
 
 ---
 

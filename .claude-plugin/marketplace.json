@@ -1,13 +1,13 @@
 {
   "name": "maestro-marketplace",
-  "description": "Provider-agnostic docs, knowledge graphs, spec workflow, and Conductor integration for Claude Code. Run /maestro:setup to onboard a project.",
+  "description": "Provider-agnostic docs, spec workflow, and Conductor integration for Claude Code. Run /maestro:setup to onboard a project.",
   "owner": {
     "name": "Piotr Salkowski"
   },
   "plugins": [
     {
       "name": "maestro",
-      "description": "Start here. The marketplace's front door: /maestro:setup interviews you in plain terms (where docs live, Conductor, knowledge graph, spec workflow), then installs and configures the right plugins in the right order — no need to know docs-hub, docs-obsidian, spec, conductor-kit, or graphify-kit by name",
+      "description": "Start here. The marketplace's front door: /maestro:setup interviews you in plain terms (where docs live, Conductor, spec workflow), then installs and configures the right plugins in the right order — no need to know docs-hub, docs-obsidian, spec, or conductor-kit by name",
       "version": "0.1.1",
       "source": "./plugins/maestro"
     },
@@ -25,15 +25,9 @@
     },
     {
       "name": "conductor-kit",
-      "description": "Conductor integration — GUI/terminal-parity action skills, personal-layer prompt overrides, workspace lifecycle scripts (setup with docs/graph seeding, run, archive)",
+      "description": "Conductor integration — GUI/terminal-parity action skills, personal-layer prompt overrides, workspace lifecycle scripts (setup with docs seeding, run, archive)",
       "version": "0.3.0",
       "source": "./plugins/conductor-kit"
-    },
-    {
-      "name": "graphify-kit",
-      "description": "Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, native-described Explore override, answer-injecting search hooks, worktree seeding, a graph-health doctor, and a transcript scorecard",
-      "version": "0.10.5",
-      "source": "./plugins/graphify-kit"
     },
     {
       "name": "spec",

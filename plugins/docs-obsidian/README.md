@@ -6,7 +6,7 @@ Obsidian **driver plugin** for the docs-hub provider contract. It integrates an 
 
 This plugin **requires [`docs-hub`](../docs-hub/)** and only handles the Obsidian-specific half of setup. The provider-uniform parts — the `## docs configuration` block in `CLAUDE.local.md`, the self-ignoring `.docs/` directory, the `.docs/vault` symlink, and the seven-folder project scaffolding — are owned by `docs-hub:setup`, which delegates to `docs-obsidian:setup` when the user picks the `obsidian` provider. Running this skill directly works too; it ends by pointing you at `docs-hub:setup` to finish the wiring.
 
-Once set up, consumer plugins (`spec`, `graphify-kit`, ...) never talk to Obsidian: they read and write through the `.docs/vault` symlink with plain file tools, and Obsidian picks up external changes natively (ADR 0001). There is no vault guard and no `vault.name` metadata — the symlink pins the exact vault path, so identity comes from the filesystem.
+Once set up, consumer plugins (`spec`, ...) never talk to Obsidian: they read and write through the `.docs/vault` symlink with plain file tools, and Obsidian picks up external changes natively (ADR 0001). There is no vault guard and no `vault.name` metadata — the symlink pins the exact vault path, so identity comes from the filesystem.
 
 ## What setup does
 

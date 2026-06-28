@@ -1,5 +1,5 @@
 ---
-description: Use when wiring a repository into Conductor with conductor-kit — writes the personal-layer prompt overrides (.conductor/settings.local.toml) that delegate Conductor's GUI actions to the conductor-kit Action Skills, and generates the workspace lifecycle scripts (.conductor/setup.sh, run.sh, archive.sh) that seed .docs/, CLAUDE.local.md, and the graphify graph into every new workspace, run its start command, and stop its processes on archive. Triggers on /conductor-kit:setup.
+description: Use when wiring a repository into Conductor with conductor-kit — writes the personal-layer prompt overrides (.conductor/settings.local.toml) that delegate Conductor's GUI actions to the conductor-kit Action Skills, and generates the workspace lifecycle scripts (.conductor/setup.sh, run.sh, archive.sh) that seed .docs/ and CLAUDE.local.md into every new workspace, run its start command, and stop its processes on archive. Triggers on /conductor-kit:setup.
 ---
 
 # /conductor-kit:setup
@@ -112,17 +112,6 @@ if [ -f "$ROOT/CLAUDE.local.md" ] && [ ! -f "$WS/CLAUDE.local.md" ]; then
   echo "[conductor-kit] copied CLAUDE.local.md from main checkout"
 fi
 
-# --- 3. Graphify worktree seeding (after all copy steps, per graphify-kit) ---
-if [ -d "$ROOT/graphify-out" ]; then
-  if [ -f "$WS/scripts/graphify/worktree-setup.sh" ]; then
-    bash "$WS/scripts/graphify/worktree-setup.sh" || true
-  elif [ -f "$ROOT/scripts/graphify/worktree-setup.sh" ]; then
-    bash "$ROOT/scripts/graphify/worktree-setup.sh" || true
-  else
-    echo "[conductor-kit] graphify-out exists on main but scripts/graphify/worktree-setup.sh is missing — run /graphify-kit:setup on the main checkout"
-  fi
-fi
-
 # --- project-specific (preserved) ---
 # Anything below this marker survives /conductor-kit:setup regeneration.
 ```
@@ -131,8 +120,6 @@ Notes on the template (do not copy these notes into the file):
 
 - Every path expansion is quoted — backing stores can live under iCloud paths containing spaces.
 - The `store` value is parsed from the `## docs configuration` fenced JSON with `sed`/`grep` only — no `jq` dependency. Missing config is tolerated (skip with a message), and an existing non-symlink `.docs/vault` is never overwritten.
-- Graphify seeding reuses graphify-kit's committed `scripts/graphify/worktree-setup.sh` (it honors `CONDUCTOR_WORKSPACE_PATH`/`CONDUCTOR_ROOT_PATH` itself); the script is never duplicated here and no plugin cache path is referenced.
-- Graphify seeding is step 3 **on purpose — it must run after every copy step**, and nothing in this script may `cp -R` the graph directory itself: a direct `cp -R graphify-out` racing the seeding script's rsync produces a nested `graphify-out/graphify-out`. The script rsyncs idempotently; never add a naive copy of the graph above the preserved marker.
 
 ### run.sh template
 
@@ -250,6 +237,6 @@ Conductor settings and the generated scripts are personal; they must never show 
 
 ## Step 5 — Report
 
-Summarize: target root used (main checkout vs worktree override), settings keys written vs preserved, which of `setup.sh` / `run.sh` / `archive.sh` were created fresh vs regenerated with a preserved section, the run command seeded into `run.sh` (or that it needs one — the TODO fallback fired), and the ignore mechanism. Remind the user that new Conductor workspaces will now auto-seed `.docs/vault`, `CLAUDE.local.md`, and the graphify graph, run their start command on Run, and stop their own processes on archive — and that existing workspaces can be re-seeded by running `bash "$CONDUCTOR_ROOT_PATH/.conductor/setup.sh"` manually inside them (this also re-points a `.docs/vault` symlink left pointing at a stale store).
+Summarize: target root used (main checkout vs worktree override), settings keys written vs preserved, which of `setup.sh` / `run.sh` / `archive.sh` were created fresh vs regenerated with a preserved section, the run command seeded into `run.sh` (or that it needs one — the TODO fallback fired), and the ignore mechanism. Remind the user that new Conductor workspaces will now auto-seed `.docs/vault` and `CLAUDE.local.md`, run their start command on Run, and stop their own processes on archive — and that existing workspaces can be re-seeded by running `bash "$CONDUCTOR_ROOT_PATH/.conductor/setup.sh"` manually inside them (this also re-points a `.docs/vault` symlink left pointing at a stale store).
 
 **Existing-workspace caveat:** files seeded with a copy-if-missing guard (`CLAUDE.local.md`, and any personal config such as `.claude/settings.local.json`) are **never refreshed** in a workspace that already has them — re-running setup on the main checkout only changes what _new_ workspaces receive. So when the seeded content itself changes (e.g. a hooks block is dropped because a plugin now owns it), existing workspaces keep the stale copy until each is updated by hand; only fresh workspaces get the new version. Flag this whenever the change being made alters seeded content.

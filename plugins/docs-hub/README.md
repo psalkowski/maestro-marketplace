@@ -1,6 +1,6 @@
 # docs-hub (v0.1.0)
 
-Provider-agnostic project docs for Claude Code. Every repo gets a **Docs Root** at `.docs/vault/` — a uniform local access point where project documentation (Features, Brainstorms, Specs, Plans, Contexts, ADRs, Notes) is read AND written with plain file tools, regardless of which provider serves it. Consumer plugins (`spec`, `graphify-kit`) never learn provider internals; the whole contract is `references/docs-protocol.md`.
+Provider-agnostic project docs for Claude Code. Every repo gets a **Docs Root** at `.docs/vault/` — a uniform local access point where project documentation (Features, Brainstorms, Specs, Plans, Contexts, ADRs, Notes) is read AND written with plain file tools, regardless of which provider serves it. Consumer plugins (`spec`) never learn provider internals; the whole contract is `references/docs-protocol.md`.
 
 ## The model
 
