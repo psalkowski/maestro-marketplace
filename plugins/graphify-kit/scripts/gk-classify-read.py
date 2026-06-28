@@ -17,6 +17,13 @@ NUDGE = ("graphify: mapping callers/callees/imports of a known symbol? `graphify
          "change impact. Do not use `graphify query` — it BFS-floods seed neighborhoods and never returns the "
          "matching names. Read files to modify or debug code.")
 
+# Whole-file reads of large CODE files are the main main-session cost — the graph
+# already hands you the lines, so reads should be targeted windows, not dumps.
+READ_CODE_EXTS = ('.py', '.js', '.ts', '.tsx', '.jsx', '.go', '.rs', '.java', '.rb', '.c', '.h',
+                  '.cpp', '.hpp', '.cc', '.cs', '.kt', '.swift', '.php', '.scala', '.vue', '.svelte')
+READ_THRESHOLD = 150   # files at or below this may be read whole
+READ_WINDOW = 200      # a read is "targeted" if it bounds itself to <= this many lines
+
 
 def _is_symbol(t):
     if re.search(r'[a-z][A-Z]', t):
@@ -50,10 +57,21 @@ def decide(d):
     if tool == 'Grep':
         pat = ti.get('pattern') or ti.get('query') or ''
         return ("deny", pat) if grep_is_by_role(pat) else ("nudge",)
-    fp = str(ti.get('file_path') or ti.get('path') or '').lower().replace('\\', '/')
-    if 'graphify-out/' in fp:
+    raw = str(ti.get('file_path') or ti.get('path') or '')
+    fpl = raw.lower().replace('\\', '/')
+    if 'graphify-out/' in fpl:
         return ("allow",)
-    if fp.endswith(CODE_EXTS):
+    if tool == 'Read' and fpl.endswith(READ_CODE_EXTS):
+        limit = ti.get('limit')
+        bounded = isinstance(limit, int) and 0 < limit <= READ_WINDOW
+        if not bounded:
+            try:
+                n = sum(1 for _ in open(raw, 'rb'))
+            except Exception:
+                n = 0
+            if n > READ_THRESHOLD:
+                return ("deny-read", str(n))
+    if fpl.endswith(CODE_EXTS):
         return ("nudge",)
     return ("allow",)
 
@@ -69,6 +87,15 @@ def main():
                   "Every usage/reference across the repo -> `graphify affected \"<Symbol>\"` (complete list, including re-exports a "
                   "text grep misses). Its definition/members -> `graphify explain \"<Symbol>\"`. The Grep tool is only for raw text "
                   "the graph can't index (a UI label or error string with spaces, a kebab-case template selector).")
+        print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
+                                                 "permissionDecision": "deny",
+                                                 "permissionDecisionReason": reason}}))
+    elif act[0] == "deny-read":
+        reason = (f"graphify: this code file is {act[1]} lines — reading it whole is the biggest main-session cost, "
+                  "and the graph already hands you the lines. Read a TARGETED window instead: pass `limit` (<= 200) and "
+                  "an `offset` taken from `graphify explain \"<Symbol>\"` (its `Source: file L<n>`) or the jq symbol "
+                  "directory (`symbol  file  line`). e.g. Read offset:<line> limit:120. Page with more windows if needed; "
+                  "don't dump the whole file. (Small files <=150 lines read whole freely.)")
         print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
                                                  "permissionDecision": "deny",
                                                  "permissionDecisionReason": reason}}))
