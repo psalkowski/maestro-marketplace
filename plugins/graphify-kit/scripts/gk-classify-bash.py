@@ -38,7 +38,9 @@ def classify(cmd):
         if core == "" or core.startswith("."):
             continue
         return ("deny", "find", pat)
-    rec = (bool(re.search(r'grep\s+[^|]*-[A-Za-z]*[rR]', c))
+    gm = re.search(r'\bgrep\b((?:\s+-{1,2}\S+)*)', c)
+    gflags = gm.group(1) if gm else ''
+    rec = (bool(re.search(r'(?:^|\s)-[a-zA-Z]*[rR]', gflags)) or 'recursive' in gflags
            or bool(re.search(r'\brg\b', c))
            or bool(re.search(r'\bgit\s+grep\b', c)))
     if rec:
@@ -50,7 +52,7 @@ def classify(cmd):
         for p in pats:
             if not p or " " in p:
                 continue
-            tokens = [t for t in p.split("|") if t]
+            tokens = [t.strip("\\") for t in re.split(r'\\?\|', p) if t.strip("\\")]
             if tokens and all(re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', t) for t in tokens):
                 if any(_is_symbol(t) for t in tokens):
                     return ("deny", "grep", p)
@@ -74,10 +76,11 @@ def main():
                       "`<path-fragment>` is any slice of the path (a directory, or the hyphenated filename `explain` rejected). "
                       "Enumerating a KNOWN dir by extension (`find <dir> -name \"*.ts\"`) is fine — that is not locating by role.")
         else:
-            reason = (f"graphify blocked a recursive grep for the symbol `{act[2]}` — that is exactly what `graphify affected` is for. "
+            reason = (f"graphify blocked a grep for the symbol `{act[2]}` — use the graph instead. "
                       "Every usage/reference of a symbol across the repo -> `graphify affected \"<Symbol>\"` (complete caller list, "
-                      "including re-exports a text grep misses). Its definition/members -> `graphify explain \"<Symbol>\"`. "
-                      "Recursive grep is only for raw text the graph can't index (a UI label, an error string with spaces).")
+                      "including re-exports a text grep misses). Its definition, or what a file defines (members/exports) -> "
+                      "`graphify explain \"<Symbol>\"` / `graphify explain \"<dir>_<stem>\"` (the file's underscore node id). "
+                      "Grep is only for raw text the graph can't index (a UI label or error string with spaces, template markup).")
         print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
                                                  "permissionDecision": "deny",
                                                  "permissionDecisionReason": reason}}))

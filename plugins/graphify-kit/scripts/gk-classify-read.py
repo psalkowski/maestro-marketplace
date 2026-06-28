@@ -32,7 +32,7 @@ def grep_is_by_role(pat):
     p = pat or ""
     if not p or " " in p:
         return False
-    tokens = [t for t in re.split(r'[|]', p) if t]
+    tokens = [t.strip("\\") for t in re.split(r'\\?\|', p) if t.strip("\\")]
     cleaned = []
     for t in tokens:
         m = re.fullmatch(r'[\\^$.*+?()\[\]{}]*([A-Za-z_][A-Za-z0-9_]*)[\\^$.*+?()\[\]{}]*', t)
