@@ -31,8 +31,8 @@
     },
     {
       "name": "graphify-kit",
-      "description": "Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, native-described Explore override, session sync hooks, worktree seeding, a graph-health doctor, and a transcript scorecard",
-      "version": "0.10.4",
+      "description": "Battle-tested graphify (knowledge graph) onboarding for any repo: exclusion analysis, agent navigation protocol, native-described Explore override, answer-injecting search hooks, worktree seeding, a graph-health doctor, and a transcript scorecard",
+      "version": "0.10.5",
       "source": "./plugins/graphify-kit"
     },
     {

@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-# Reads a PreToolUse(Bash) payload on stdin. Emits a deny decision for an
-# unambiguous by-role search (the leak the graph exists to prevent), a
-# non-blocking nudge for other grep/find, or nothing. Never denies an
-# extension sweep (*.ts), a path sweep (-path), or a string-literal grep.
-import re, sys, json
+# Reads a PreToolUse(Bash) payload on stdin. For an unambiguous by-role search
+# (the leak the graph exists to prevent) it RUNS the graph and embeds the result
+# in the deny reason, so the model gets the complete answer in the SAME turn —
+# no scold-then-retry round-trip. If the graph does not actually know the symbol
+# (new code, external lib, string-ish name) it downgrades to a non-blocking
+# nudge so the grep/find still runs. Other grep/find get the plain nudge.
+# Detection logic lives in classify() (pure, unit-tested); main() does the I/O.
+import re, sys, json, shutil, subprocess
 
 NUDGE = ("graphify: LOCATE code through the graph, not this grep. Flow: no symbol yet -> "
          "run the jq symbol directory (harvests real names + file:line); have a name -> "
@@ -14,6 +17,21 @@ NUDGE = ("graphify: LOCATE code through the graph, not this grep. Flow: no symbo
 PATHFILTER = ("jq -r --arg p \"<path-fragment>\" '.nodes[] | select((.source_file // \"\") | contains($p)) | "
               "((.label | gsub(\"\\\\s+\";\" \"))[0:60]) + \"  \" + (.source_file // \"?\") + \"  \" + "
               "(.source_location // \"?\")' graphify-out/graph.json | sort -u")
+
+JQ_PATHFILTER = (r'.nodes[] | select((.source_file // "") | contains($p)) | '
+                 r'((.label | gsub("\\s+";" "))[0:60]) + "  " + (.source_file // "?") + "  " '
+                 r'+ (.source_location // "?")')
+
+GREP_PREAMBLE = ("graphify intercepted this grep and ran the graph for you — the complete definition + "
+                 "caller/import map is below, so there is NOTHING to re-run. When a symbol's connections "
+                 "end with \"... and N more\", that is `explain`'s 20-connection cap: run "
+                 "`graphify affected \"<Symbol>\"` for the COMPLETE usage list. Grep stays reserved for "
+                 "raw text the graph can't index (a UI label / error string with spaces, template markup).\n\n")
+
+FIND_PREAMBLE = ("graphify intercepted this by-role `find` and ran the on-graph path filter for you — every "
+                 "symbol in files whose path contains \"%s\", with file:line, is below (nothing to re-run). "
+                 "Narrow the fragment or `graphify explain \"<Symbol>\"` a specific row to go deeper. "
+                 "Enumerating a KNOWN dir by extension (`find <dir> -name \"*.ts\"`) is fine and not blocked.\n\n")
 
 
 def _is_symbol(t):
@@ -61,6 +79,54 @@ def classify(cmd):
     return ("allow",)
 
 
+def _run(args):
+    try:
+        r = subprocess.run(args, capture_output=True, text=True, timeout=8)
+        return (r.stdout or "").strip()
+    except Exception:
+        return ""
+
+
+def _symbols(pat):
+    toks = [t.strip("\\") for t in re.split(r'\\?\|', pat) if t.strip("\\")]
+    return [t for t in toks if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', t) and _is_symbol(t)]
+
+
+def inject_grep(pat):
+    if not shutil.which("graphify"):
+        return None
+    blocks = []
+    for s in _symbols(pat)[:2]:
+        out = _run(["graphify", "explain", s])
+        if out and "No node matching" not in out:
+            blocks.append("$ graphify explain \"%s\"\n%s" % (s, out))
+    return GREP_PREAMBLE + "\n\n".join(blocks) if blocks else None
+
+
+def inject_find(pat):
+    frag = pat.strip("*")
+    if not frag or not shutil.which("jq"):
+        return None
+    out = _run(["jq", "-r", "--arg", "p", frag, JQ_PATHFILTER, "graphify-out/graph.json"])
+    if not out:
+        return None
+    lines = sorted(set(out.splitlines()))
+    body = "\n".join(lines[:40])
+    if len(lines) > 40:
+        body += "\n... (%d more — narrow the fragment)" % (len(lines) - 40)
+    return (FIND_PREAMBLE % frag) + body
+
+
+def _deny(reason):
+    print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
+                                             "permissionDecision": "deny",
+                                             "permissionDecisionReason": reason}}))
+
+
+def _nudge():
+    print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "additionalContext": NUDGE}}))
+
+
 def main():
     try:
         d = json.load(sys.stdin)
@@ -70,23 +136,13 @@ def main():
     cmd = ti.get("command", "") if isinstance(ti, dict) else (ti if isinstance(ti, str) else "")
     act = classify(cmd)
     if act[0] == "deny":
-        if act[1] == "find":
-            reason = (f"graphify blocked `find -name \"{act[2]}\"` — locating a file by its ROLE is the leak the graph replaces. "
-                      f"List every symbol in matching files with file:line via the on-graph path filter:\n{PATHFILTER}\n"
-                      "`<path-fragment>` is any slice of the path (a directory, or the hyphenated filename `explain` rejected). "
-                      "Enumerating a KNOWN dir by extension (`find <dir> -name \"*.ts\"`) is fine — that is not locating by role.")
+        inj = inject_grep(act[2]) if act[1] == "grep" else inject_find(act[2])
+        if inj:
+            _deny(inj)
         else:
-            reason = (f"graphify blocked a grep for the symbol `{act[2]}` — use the graph instead. "
-                      "Every usage/reference of a symbol across the repo -> `graphify affected \"<Symbol>\"` (complete caller list, "
-                      "including re-exports a text grep misses). Its definition, or what a file defines (members/exports) -> "
-                      "`graphify explain \"<Symbol>\"` / `graphify explain \"<dir>_<stem>\"` (the file's underscore node id). "
-                      "Grep is only for raw text the graph can't index (a UI label or error string with spaces, template markup).")
-        print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
-                                                 "permissionDecision": "deny",
-                                                 "permissionDecisionReason": reason}}))
+            _nudge()
     elif act[0] == "nudge":
-        print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
-                                                 "additionalContext": NUDGE}}))
+        _nudge()
 
 
 if __name__ == "__main__":

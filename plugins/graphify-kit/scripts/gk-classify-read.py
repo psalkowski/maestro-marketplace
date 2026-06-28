@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 # PreToolUse(Read|Glob|Grep) for a repo with a graphify graph:
 #  - Grep TOOL with a by-role SYMBOL pattern (camelCase / PascalCase /
-#    SCREAMING_SNAKE, including regex alternation A|B|C) -> DENY and redirect to
-#    `graphify affected`/`explain`.
-#  - otherwise the existing non-blocking nudge for code reads / greps.
+#    SCREAMING_SNAKE, including regex alternation A|B|C) -> RUN the graph and
+#    embed `graphify explain` output in the deny, so the model gets the complete
+#    answer in the SAME turn. If the graph does not know the symbol, downgrade to
+#    a non-blocking nudge so the Grep still runs.
+#  - otherwise a non-blocking nudge for code reads / greps.
 # Never denies a string-literal pattern (has a space), a kebab-case selector
-# (app-foo-bar), or a lone word (todo, TODO). Logic in decide(); unit-tested.
-import re, sys, json
+# (app-foo-bar), or a lone word (todo, TODO). decide() is pure + unit-tested.
+# Whole-file reads are NOT blocked: an A/B run showed forcing windowed reads
+# fragmented them into extra turns with no accuracy gain — reading a file you
+# need is legitimate, and the grep->explain injection already prevents the
+# read-to-find-relationships anti-pattern.
+import re, sys, json, shutil, subprocess
 
 CODE_EXTS = ('.py', '.js', '.ts', '.tsx', '.jsx', '.go', '.rs', '.java', '.rb', '.c', '.h',
              '.cpp', '.hpp', '.cc', '.cs', '.kt', '.swift', '.php', '.scala', '.lua', '.sh',
@@ -14,15 +20,15 @@ CODE_EXTS = ('.py', '.js', '.ts', '.tsx', '.jsx', '.go', '.rs', '.java', '.rb', 
 
 NUDGE = ("graphify: mapping callers/callees/imports of a known symbol? `graphify explain \"<ExactSymbol>\"` "
          "returns them with file:line, cheaper than reading whole files; `graphify affected \"<Symbol>\"` for "
-         "change impact. Do not use `graphify query` — it BFS-floods seed neighborhoods and never returns the "
-         "matching names. Read files to modify or debug code.")
+         "change impact (the COMPLETE usage list when explain shows \"... and N more\"). Do not use "
+         "`graphify query` — it BFS-floods seed neighborhoods and never returns the matching names. "
+         "Read files to modify or debug code.")
 
-# Whole-file reads of large CODE files are the main main-session cost — the graph
-# already hands you the lines, so reads should be targeted windows, not dumps.
-READ_CODE_EXTS = ('.py', '.js', '.ts', '.tsx', '.jsx', '.go', '.rs', '.java', '.rb', '.c', '.h',
-                  '.cpp', '.hpp', '.cc', '.cs', '.kt', '.swift', '.php', '.scala', '.vue', '.svelte')
-READ_THRESHOLD = 150   # files at or below this may be read whole
-READ_WINDOW = 200      # a read is "targeted" if it bounds itself to <= this many lines
+GREP_PREAMBLE = ("graphify intercepted this Grep and ran the graph for you — the complete definition + "
+                 "caller/import map is below, so there is NOTHING to re-run. When a symbol's connections "
+                 "end with \"... and N more\", that is `explain`'s 20-connection cap: run "
+                 "`graphify affected \"<Symbol>\"` for the COMPLETE usage list. Grep stays reserved for "
+                 "raw text the graph can't index (a UI label / error string with spaces, template markup).\n\n")
 
 
 def _is_symbol(t):
@@ -35,13 +41,16 @@ def _is_symbol(t):
     return False
 
 
+def _tokens(pat):
+    return [t.strip("\\") for t in re.split(r'\\?\|', pat or "") if t.strip("\\")]
+
+
 def grep_is_by_role(pat):
     p = pat or ""
     if not p or " " in p:
         return False
-    tokens = [t.strip("\\") for t in re.split(r'\\?\|', p) if t.strip("\\")]
     cleaned = []
-    for t in tokens:
+    for t in _tokens(p):
         m = re.fullmatch(r'[\\^$.*+?()\[\]{}]*([A-Za-z_][A-Za-z0-9_]*)[\\^$.*+?()\[\]{}]*', t)
         if not m:
             return False
@@ -61,19 +70,33 @@ def decide(d):
     fpl = raw.lower().replace('\\', '/')
     if 'graphify-out/' in fpl:
         return ("allow",)
-    if tool == 'Read' and fpl.endswith(READ_CODE_EXTS):
-        limit = ti.get('limit')
-        bounded = isinstance(limit, int) and 0 < limit <= READ_WINDOW
-        if not bounded:
-            try:
-                n = sum(1 for _ in open(raw, 'rb'))
-            except Exception:
-                n = 0
-            if n > READ_THRESHOLD:
-                return ("deny-read", str(n))
     if fpl.endswith(CODE_EXTS):
         return ("nudge",)
     return ("allow",)
+
+
+def _run(args):
+    try:
+        r = subprocess.run(args, capture_output=True, text=True, timeout=8)
+        return (r.stdout or "").strip()
+    except Exception:
+        return ""
+
+
+def inject_grep(pat):
+    if not shutil.which("graphify"):
+        return None
+    syms = [t for t in _tokens(pat) if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', t) and _is_symbol(t)]
+    blocks = []
+    for s in syms[:2]:
+        out = _run(["graphify", "explain", s])
+        if out and "No node matching" not in out:
+            blocks.append("$ graphify explain \"%s\"\n%s" % (s, out))
+    return GREP_PREAMBLE + "\n\n".join(blocks) if blocks else None
+
+
+def _emit(obj):
+    print(json.dumps({"hookSpecificOutput": dict({"hookEventName": "PreToolUse"}, **obj)}))
 
 
 def main():
@@ -83,24 +106,13 @@ def main():
         return
     act = decide(d)
     if act[0] == "deny":
-        reason = (f"graphify blocked a Grep for the symbol `{act[1]}` — that is what `graphify affected`/`explain` are for. "
-                  "Every usage/reference across the repo -> `graphify affected \"<Symbol>\"` (complete list, including re-exports a "
-                  "text grep misses). Its definition/members -> `graphify explain \"<Symbol>\"`. The Grep tool is only for raw text "
-                  "the graph can't index (a UI label or error string with spaces, a kebab-case template selector).")
-        print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
-                                                 "permissionDecision": "deny",
-                                                 "permissionDecisionReason": reason}}))
-    elif act[0] == "deny-read":
-        reason = (f"graphify: this code file is {act[1]} lines — reading it whole is the biggest main-session cost, "
-                  "and the graph already hands you the lines. Read a TARGETED window instead: pass `limit` (<= 200) and "
-                  "an `offset` taken from `graphify explain \"<Symbol>\"` (its `Source: file L<n>`) or the jq symbol "
-                  "directory (`symbol  file  line`). e.g. Read offset:<line> limit:120. Page with more windows if needed; "
-                  "don't dump the whole file. (Small files <=150 lines read whole freely.)")
-        print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse",
-                                                 "permissionDecision": "deny",
-                                                 "permissionDecisionReason": reason}}))
+        inj = inject_grep(act[1])
+        if inj:
+            _emit({"permissionDecision": "deny", "permissionDecisionReason": inj})
+        else:
+            _emit({"additionalContext": NUDGE})
     elif act[0] == "nudge":
-        print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "additionalContext": NUDGE}}))
+        _emit({"additionalContext": NUDGE})
 
 
 TESTS = [
